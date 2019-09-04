@@ -1,0 +1,25 @@
+
+\chapter{Background}
+\label{ch:Background}
+
+{\bf ARM TrustZone}~\cite{trustzone} is a widely available hardware-based TEE
+(Trusted Execution Environment) that partitions a device's CPU, memory, and
+peripherals, into two isolated logical ``worlds'' --- normal and secure. Each
+CPU core runs either in a non-secure state, where it has access only to
+resources assigned to the normal world, or a secure state where it has access to
+both normal and secure world resources. When switching between states (e.g., via
+the {\tt smc} instruction), the secure monitor, a critical and heavily-vetted
+software, is invoked to safely perform the transition. TrustZone enables a
+trusted OS to run in the secure world in conjunction with an OS in the normal
+world, and it protects state in the secure world even if the normal world is
+compromised.
+
+{\bf OP-TEE}~\cite{optee} is an open-source software stack that facilitates the
+use of ARM TrustZone. It provides a secure world OS (OP-TEE OS) for executing
+trusted applications; a low-level secure monitor for switching a core between
+non-secure and secure states; a TrustZone driver for normal world OSes such as
+Linux, which enables regular user-space applications to execute RPCs in the TEE;
+and a user-space supplicant that enables applications running in the TEE to
+access resources in the normal world OS.
+
+\endinput

@@ -1,0 +1,263 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Use case examples}
+\label{sec:new-policies}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In this section, we discuss several use cases to highlight the capabilities of
+Trusted Capsules.
+
+% In this section, we introduce four policies that demonstrate how trusted
+% capsules can be used in real-life scenarios that require the enforcement of
+% strong first-use policies. We use these policies to evaluate the system in
+% section \ref{sec:eval}, and to demonstrate the expressiveness of our policy API
+% as introduced in Section \ref{subsec:policy}.
+
+
+\textbf{Access control based on time or location}: Enterprises may wish to
+restrict employees from opening company files outside the office or a user may
+require his family members to only view shared pictures at their
+homes. Alternatively, the data owner may wish to allow access to sensitive
+content only within a pre-determined time period. Such requirements are
+straightforward to express in our system. When a capsule policy's
+\texttt{evaluate\_policy()} function is evaluated at the time of
+\texttt{open()}, it can access the device location and time to decide if the
+access should be allowed or denied. Alternatively, instead of simply denying access
+to a capsule, policies may use the \texttt{redact()} API in
+Table~\ref{Tbl:lua_ext} to allow access but with sensitive content
+redacted.
+
+For example, Figure~\ref{fig:location_policy} illustrates a policy
+that denies access to the capsule if the location from which it is
+being accessed is outside the specified location range. 
+
+\textbf{Requiring permissions in real time}: In some cases, users may wish to
+have real time control over their data. For example, Alvin may wish to be asked
+each time Barbara opens his capsule whether or not to allow her access. It is
+straightforward to support this scenario in Trusted Capsules as policies can
+communicate with remote servers over the Internet.
+
+We implemented this scenario in our prototype using Twitter. When a user opens a capsule,
+the policy uses the \texttt{getState()} API method to communicate with a custom
+server and passes the Twitter handle of the capsule owner. The server then sends
+a direct Twitter message to the owner of the capsule with an access request
+and asks him to respond with a ``yes'' or ``no'' to approve or decline the access,
+respectively. The server returns the owner's decision to the policy and the
+appropriate action is taken. At the moment, the Twitter message to the owner
+does not identify the user trying to open the capsule but this can be
+implemented by mapping unique device identifiers to Twitter handles.
+
+\textbf{Progressive trust}: The APIs in Table~\ref{Tbl:lua_ext} may be composed
+to support other useful scenarios. Suppose Bob wants to share
+sensitive data with someone but does not yet completely trust that person. He
+can use a policy that contacts a remote server to log access attempts and to
+identify what data should be returned to the app. Initially, Bob may choose to
+provide a heavily redacted version of the data (e.g., an image with blurred-out
+faces or a document with key sections removed). As his trust towards
+the person grows, he can progressively share more sensitive content by recording his
+decisions on the server.
+
+% \textbf{Pre-distribution of content}: Popular TV shows such as Game of Thrones
+% suffer from massive bandwidth load during their premier nights on video
+% streaming services. Ideally, creators should be able to write policies that
+% allow them to pre-distribute their content while ensuring that it cannot be
+% viewed until a pre-set release date.
+
+As an example of a policy with progressive trust, consider
+Figure~\ref{fig:time_based_access} which consider content
+pre-distribution: a capsule creator writes this policy to
+pre-distribute their content while ensuring that the content cannot be
+viewed until a pre-set release date. For this use case, we rely on a
+trusted remote server for getting the time. Capsule metadata is first
+inspected using \texttt{getState()} to check if the content has
+already been approved for access by the policy. If this is indeed the
+first access to the capsule, using the \texttt{getTime()} API, the
+remote server is contacted to get the epoch value and it is compared
+to the epoch value in the policy. If the remote epoch stamp is greater
+than the time encoded in the policy, the access is approved, and the
+metadata is updated using \texttt{setState()} to reflect this. Any
+subsequent accesses to the capsule do not involve querying the remote
+server for getting the time.
+
+% In situations where the data-owner wishes to exercise greater control over who
+% gets to access their data, relying on such statically defined policies might not
+% be an appealing solution. Data owners might want to push new policies to affect
+% change in capsules that have already been created and circulated.  This use-case
+% can be serviced by using the trusted server to host new policy versions. The The
+% \texttt{updatePolicy()} API can be used by the trusted application to get an
+% updated version from the remote server.
+
+% This mechanism, however, has an inherent delay between the when the owner
+% decides to change the policy for a capsule, and the change getting published
+% since it is contingent on the owner writing and releasing a new policy
+% version. This non-trivial amount of work can lead to the data owners not
+% updating the policies in time.
+
+% A mechanism for asking the owner for access in real-time could alleviate this
+% effort and provide a finer-grained control on data access. To this end, we
+% extended the policy API to introduce a new remote location to seek permission
+% from - Twitter. The data owner embeds her Twitter handle in the policy and sets
+% the location for metadata operation to "POLICY\_REMOTE\_SERVER". The key for the
+% \texttt{getState()} operation is set to "twitter:<username>". The "twitter:"
+% string in the key is used to distinguish this as a Twitter request.
+
+% When the remote server receives a \texttt{getState()}, and identifies the key to
+% be a twitter handle, it invokes the Twitter Direct Message API to send an open
+% request to the data owner. When the data owner receives this response, they can
+% reply to "yes" or "no" to approve or decline the access request
+% respectively. The server then returns the response to the Trusted Application
+% which then returns the appropriate action.
+
+% \textbf{Allowing access to data in agreed upon locations}: This policy can be
+% used by data-owners to control \emph{where} their data can be
+% accessed. Enterprises may wish to exercise control on where their employees may
+% be able to access their sensitive data.
+% {
+% \pu{We need to identify why simply
+%   blocking access to copying data does not work - This is usually done by using
+%   device-level policies that block ways which can be used to copy the data, say,
+%   blocking access to USB media.}
+
+\begin{figure*}[t]
+\begin{lstlisting}[language={[5.1]Lua} ,basicstyle=\small,showstringspaces=false,numbers=left,stepnumber=1,tabsize=1]
+longitude = 1250
+latitude = 200
+range = 10
+
+function evaluate_policy( op )
+    if op == POLICY_OP_OPEN or op == POLICY_OP_CLOSE then
+        long, lat, err = getLocation( POLICY_LOCAL_DEVICE )
+            if err ~= POLICY_NIL then
+                comment = "Failed to getLocation"
+                return false
+            end
+            if math.abs(long - longitude) <= range
+            and math.abs(lat - latitude) <= range then
+                comment = "GPS coordinates in range"
+                return true
+            else
+                comment = "GPS coordinates are not in range"
+                return false
+            end
+    end
+end
+\end{lstlisting}
+\caption{Simple location based access policy}
+\label{fig:location_policy}
+\end{figure*}
+
+
+% \textbf{Location based redaction}: The policy as specified is fairly restrictive
+% and blocks all access to the data contents outside a geographical range. There
+% can be a scenario where the data owners wish to allow the partial revelation of
+% the data in locations that are not trusted. To fulfill this requirement, the
+% policy in Figure \ref{fig:location_policy} can be tweaked to allow redaction of
+% data that is marked confidential by the creator.
+
+% The data creator can encapsulate sensitive information in the data within some
+% policy defined secrecy tags (for example: \texttt{<secret> , </secret>} can be
+% used). The \texttt{redact()} API can be used in the policy to look for these
+% tags and replace the text contained therein with a replacement string. This
+% policy is shown in Figure \ref{fig:location_redaction_policy}.
+
+% \begin{figure}
+% \begin{lstlisting}[language={[5.1]Lua} ,basicstyle=\tiny,showstringspaces=false,numbers=left,stepnumber=1,tabsize=1]
+% replaceVar = "REDACTED"
+% longitude = 1250
+% latitude = 200
+% range = 10
+% startTag = "<secret>"
+% endTag = "</secret>"
+% function evaluate_policy( op )
+%     if op == POLICY_OP_OPEN or op == POLICY_OP_CLOSE then
+%         long, lat, err = getLocation( POLICY_LOCAL_DEVICE )
+%         if err ~= POLICY_NIL then
+%             policy_result = POLICY_NOT_ALLOW
+%             comment = "Failed to getLocation"
+%             return
+%         end
+%         if math.abs(long - longitude) <= range
+%         and math.abs(lat - latitude) <= range then
+%             comment = "GPS coordinates in range"
+%             policy_result = POLICY_ALLOW
+%             return
+%         else
+%             comment = "GPS coordinates are not in range. Redacting data."
+%             policy_result = POLICY_NOT_ALLOW
+%         end
+%         while s ~= nil and e ~= nil do
+%             s = string.find(data, startTag, s)
+%             if s ~= nil then
+%                 e = string.find(data, endTag, s+1)
+%                 if e ~= nil then
+%                     err = redact( s, e, "replaceVar" )
+%                     if err ~= POLICY_NIL then
+%                         policy_result = err
+%                         return
+%                     end
+%                 end
+%             end
+%         end
+% \end{lstlisting}
+% \caption{Location based redaction policy}
+% \label{fig:location_redaction_policy}
+% \end{figure}
+
+% \textbf{Pre-distribution of content}: Popular TV shows such as Game of Thrones
+% suffer from massive bandwidth load during their premier nights on video
+% streaming services. Ideally, creators should be able to write policies that
+% allow them to pre-distribute their content while ensuring that it cannot be
+% viewed until a pre-set release date.
+
+% This use-case can be expressed easily in our policy API. To facilitate this use
+% case, we rely upon a trusted remote server for getting time. Capsule metadata is
+% first inspected using \texttt{getState()} to check if the content has already
+% been approved for access by the policy. If this is indeed the first access to
+% the capsule, using the \texttt{getTime()} API, the remote is contacted to get
+% the epoch value and it is compared to the epoch value in the policy. If the
+% remote epoch stamp is greater than the time encoded in the policy, the access is
+% approved, and the metadata is updated using \texttt{setState()} to reflect
+% this. Any subsequent accesses to the capsule do not involve querying the remote
+% server for getting the time.
+
+\begin{figure*}[t]
+\begin{lstlisting}[language={[5.1]Lua} ,basicstyle=\small,showstringspaces=false,numbers=left,stepnumber=1,tabsize=1]
+-- remote server information
+remote_server = "198.162.52.127:3490"
+-- return keywords
+policy_result = POLICY_NOT_ALLOW
+comment = ""
+
+-- policy-specific keywords
+open_time = 1523338041
+opened = "opened"
+
+function evaluate_policy( op )
+    if op == POLICY_OP_OPEN then
+        r, err = getState( opened, POLICY_CAPSULE_META )
+        if r == "true" then
+            return true
+        else
+            curr_time, err = getTime( POLICY_REMOTE_SERVER )
+        end
+        if err ~= POLICY_NIL then
+            policy_result = err
+            comment = "Failed to get time from remote server"
+            return false
+        end
+        if curr_time > open_time then
+            err = setState( opened, "true", POLICY_CAPSULE_META )
+            if err ~= POLICY_NIL then
+                policy_result = err
+                comment = "Failed to update capsule metadata"
+                return false
+            end
+            return true
+        end
+    end
+end
+\end{lstlisting}
+\caption{Policy to allow content pre-distribution}
+\label{fig:time_based_access}
+\end{figure*}
+
+% This policy can also be easily tweaked to revoke access to the file after a pre-determined amount of time has elapsed since the first time the capsule was successfully accessed. In this scenario, the default policy action is \texttt{POLICY\_ALLOW} and the policy transitions to the \texttt{POLICY\_NOT\_ALLOW} once the view window expires. Such a policy can be useful when sharing documents, for instance - college transcripts, that contain sensitive personal identifiers like Social Security Numbers (SSNs).

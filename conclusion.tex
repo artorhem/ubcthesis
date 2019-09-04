@@ -1,0 +1,43 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusion}
+\label{sec:conc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Data security on remote devices that the data owner cannot control
+represents a unique challenge in our data promiscuous world.  Systems
+exchange data indiscriminately and do not offer the data owner any
+ability to control access policy on remote devices. At best, data is
+encrypted to prevent declassification. %% But, once the data is
+%% distributed, the data can travel without restraint.
+
+We introduced graduated access control and realized it using a trusted
+capsule abstraction and a data monitor that runs inside ARM's
+TrustZone trusted execution environment. Our solution builds on the
+file abstraction and does not require any modification to
+applications, is gradually deployable, and can be ported to other
+kinds of trusted execution environments.
+
+%% Our evaluation demonstrates that
+%% graduated access control
+%% latency and throughput overhead is reasonable for existing popular
+%% applications like a word processer, video/image viewer, and pdf reader.
+
+
+%% Our evaluation demonstrates that the graduated access control model is
+%% useful for a variety of the joint utility and security requirements of
+%% a broad range of classes of day-to-day activities by entities with
+%% specific security concerns.
+
+%%  with existing and unmodified applications while enabling the
+%% data owner to express advisory policies that act as the minimum data
+%% policy across all systems and applications.
+
+%% The trusted capsules abstraction ties policy to data -- offering to our
+%% knowledge for the first time a universal policy abstraction. Our realization
+%% of this abstraction, relying on ARM's TrustZone, provides the data
+%% owner with the fine-grained control over the data and its policy
+%% across system boundaries. The owner will be able to monitor data
+%% access as it occurs, retroactively change data policy and locally 
+%% evaluate access policy based on local and remote state. Its advisory policy 
+%% capabilities can satisify the joint utility and security requirements of a 
+%% broad range of classes of day-to-day activities by entities with specific security concerns.

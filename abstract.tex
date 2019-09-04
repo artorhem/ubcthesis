@@ -3,18 +3,21 @@
 
 \chapter{Abstract}
 
-This document provides brief instructions for using the \class{ubcdiss}
-class to write a \acs{UBC}-conformant dissertation in \LaTeX.  This
-document is itself written using the \class{ubcdiss} class and is
-intended to serve as an example of writing a dissertation in \LaTeX.
-This document has embedded \acp{URL} and is intended to be viewed
-using a computer-based \ac{PDF} reader.
+Users desire control over their data even as they share them across device
+  boundaries. At the moment, they rely on ad-hoc solutions such as sending
+  self-destructible data with ephemeral messaging apps such as SnapChat. In this
+  paper, we present \textbf{Trusted Capsules}, a general cross-device access
+  control abstraction for files. It bundles sensitive files with the policies
+  that govern their accesses into units we call {\em capsules}. Capsules appear
+  as regular files in the system. When an app opens one, its policy is executed
+  in ARM TrustZone, a hardware-based trusted execution environment, to determine
+  if access should be allowed or denied. As Trusted Capsules is based on a
+  pragmatic threat model, it works with unmodified apps that users have come to
+  rely on, unlike existing work. We show that policies in Trusted Capsules are
+  expressible and that the slowdowns in our approach are limited to the opening
+  and closing of capsules. Once an app opens a capsule, its read throughput of
+  the file is identical to regular non-capsule files.
 
-Note: Abstracts should generally try to avoid using acronyms.
-
-Note: at \ac{UBC}, both the \ac{GPS} Ph.D. defence programme and the
-Library's online submission system restricts abstracts to 350
-words.
 
 % Consider placing version information if you circulate multiple drafts
 %\vfill

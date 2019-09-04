@@ -1,0 +1,124 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Related Work}
+\label{sec:related}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Securing data with policies}: The concept of associating policies to
+data to authenticate accesses to that data is not new. An early expression of
+this is XACL, which specifies access control policies within XML
+documents~\cite{xacl}. Karjoth et al. proposed using {\em sticky policies} to
+provide enterprises better oversight over the customer data they
+collect~\cite{karjoth02enterprise}. These policies capture customer-specified
+requirements (e.g.: ``delete my data after 30 days'') and are associated with
+the collected data. They are then enforced cooperatively within the enterprise
+as the data is used. Subsequent work strengthened this scheme by encrypting the
+data bundled with the policy using IBE (identifier-based encryption) and
+decrypting it only if its policies are satisfied~\cite{mont03stickypolicies,
+  pearson11stickypolicies}. Encrypting the data reduces the need for cooperation
+and allows sharing data across enterprise boundaries
+
+Maniatis et al. outlined a vision that allows {\em all} users to protect their
+data before they share them across machine boundaries~\cite{datacapsules}. Their
+conceptual architecture uses the sticky policy approach to package data in units
+known as {\em data capsules}. When an application needs to use a capsule and
+satisfies the capsule's policies, an abstract secure execution environment
+decrypts the capsule and executes the application. An implementation of this
+architecture was left as an open question.
+
+More recent works use trusted computing features on mobile devices to protect
+data with the sticky policy approach. Li et al. proposed DroidVault to allow
+employees in an enterprise to securely store and process sensitive company data
+on their untrusted Android devices~\cite{li14droidvault}. Its architecture only
+allows trusted code signed by the enterprise to operate on the data and executes
+it in ARM TrustZone.  To display data and receive user inputs, it relies on
+secure I/O between the peripherals (display, keypad, etc.) and TrustZone. This
+architecture ensures unencrypted versions of the sensitive data do not leave the
+TrustZone environment. Lazouski et al. proposed using TPMs (Trusted Platform
+Modules) to ensure only vetted versions of the OS and applications are loaded
+before accessing sensitive data and executing their
+policies~\cite{lazouski14stateful}. In principle, this approach allows policy
+execution and data access in normal world (outside TrustZone) while guaranteeing
+the absence of malicious applications.
+
+Other related work in this area include Excalibur, which enables a cloud
+provider to protect data stored in its cloud from being exfiltrated by its
+administrators who have access to the cloud management
+interface~\cite{excalibur}; PCD (policy-carrying data), which lets an end user
+attach terms of service to his data before sharing it cloud service providers
+and thereby disincentivizing them from misusing the data ~\cite{policydata};
+Ryoan, which enables users to submit their sensitive data to a cloud service
+provider for processing without requiring either the user to disclose the data
+or for the provider to release their proprietary code~\cite{ryoan}; and P3, a
+private photo-sharing service that protects images shared by users from
+untrusted service providers~\cite{p3}.
+
+Trusted Capsules differs from these in its aim and scope: it uses the sticky
+policy technique to allow end users to protect their own data as they share it
+with other end users and unlike P3, it is data type agnostic. While Trusted
+Capsules uses ARM TrustZone to securely execute the policies, it allows unvetted
+normal world processes to access unencrypted sensitive data in the optimistic
+state (unlike DroidVault and the work by Lazouski et al.). Our approach is
+motivated by usability concerns as we want authorized users to be able to use
+their desired third-party apps to process sensitive data.
+
+There are now startups that have emerged as players in the domain of providing data security systems. A startup called Sandstorm ~\cite{sandstorm} abstracts data 
+as a \textit{grain} -- a package of all 
+the apps, libraries, and configuration files needed to operate on a single 
+piece of data locally within a container. Sandstorm then creates an 
+enclosure around the container and interposes on all operations to enforce the \textit{grain}'s
+access policies.
+Unlike trusted capsules, which operates at the granularity of a
+piece of data, Sandstorm operate at the granularity of an entire
+software ecosystem for the data.
+
+\textbf{Information Flow Control based mechanisms}: There has also been a vast body of research that studies providing data confidentiality through label-based solutions such as Distributed Information Flow Control ~\cite{jif, asbestos, histar, dstar, laminar, aeolus, flume}. They use labels to specify access control, 
+capabilities, and authority. These labels are used to track the flow of information at various levels of the software stack. 
+
+By not allowing data to move to processes that 
+do not have the right labels, DIFC prevents sensitive data from being exfiltrated. 
+ 
+In DIFC, labels create a natural ecosystem for composition that allow a process to access multiple pieces of data. Trusted capsules are less composable. 
+If two trusted capsules have contradictory policies, they
+cannot be accessed by a process at the same time. On the other hand, trusted capsules are backward compatible 
+and do not require constructing a complex security lattice as in DIFC.
+
+Another popular approach is tainting~\cite{demandemulation, neon,
+taintdroid, practicaltainting}. It tracks information flow by interposing
+on the system operations at the instruction-level. 
+%In this way, such a
+These solution can track the flow of information at extremely fine
+granularity. %without changes to the application or operating system. 
+However they are resource intensive, both in memory
+and CPU. 
+
+\textbf{Policy Based Isolation Mechanisms}: Traditional isolation-based solutions remain one of the most widely used practical solutions currently to provide data protection. These solutions, such as VPN, VMWare Ace~\cite{VMWareAce}, Secure Spaces~\cite{securespaces} and Hypori~\cite{hypori}, attempt to prevent
+sensitive data from leaving in the first place by enforcing policy at
+the network boundary between external and internal systems. 
+In these cases, policies that restrict movement of sensitive data can still be
+defeated by transformations, such as encryption and compression.
+In addition, some of these solutions incur substantial network cost as they do not support offline operations. 
+
+Finally, other work has sought to ensure data confidentiality by
+enforcing application structures~\cite{Cleanroom, privacycapsules},
+limiting data lifetimes~\cite{enforcinglifetime, lacuna} and providing
+recourse actions such as backtracing intrusions~\cite{Backtracking, taser}.
+
+
+\textbf{Other TEE work}: The research community has used TEEs such as ARM
+TrustZone and Intel SGX for a variety of purposes - to provide a secure environment for running VMs, secure partitions or executing parts of third-party applications and to store their data   ~\cite{TLR, Nokia1, Nokia2}, to provide a root-of-trust for performing runtime measurements ~\cite{restrictedspaces, hypervision,SKEE,secvisor} and to secure peripherals ~\cite{TrustedSensors}. In general, these are
+orthogonal to Trusted Capsules. 
+
+VButton uses TrustZone to attest whether the UI
+inputs on the smartphone were initiated by the user~\cite{li18vbutton}; SeCloak
+provides direct control (on/off) over device peripherals even when the normal
+world OS is compromised~\cite{lentz18secloak}; Truz-Droid enables users to
+securely input and send secrets e.g., login credentials, to authorized servers
+without executing third-party code in TrustZone~\cite{ying18truzdroid};
+TrustShadow protects applications from untrusted OSes by executing them with a
+runtime in TrustZone~\cite{guan17trustshadow}; and SchrodinText allows the
+untrusted normal world OS to render sensitive text in the display received from
+an application backend server without revealing the contents of the
+text~\cite{sani17schrodintext}; DelegaTEE, which uses Intel SGX to enable users
+to share their access to online service providers without revealing their
+credentials~\cite{matetic18delegatee}.
+
