@@ -1,7 +1,7 @@
 \chapter{Trusted Capsules}
 \label{ch:trustedcapsules}
 At a high-level, Trusted Capsules packages data into protected units known as
-{\em capsules}. When an app in the normal world tries to open a capsule, the
+    {\em capsules}. When an app in the normal world tries to open a capsule, the
 Trusted Capsules data monitor intercepts the open and executes the policy within
 the TrustZone TEE. If the capsule's policy authorizes the access, the capsule
 data is decrypted and returned to the app. When the application eventually closes the file,
@@ -14,10 +14,10 @@ we describe the components of our system.
 %%%%%%%%%%%%%%%%%%%%
 %% \ref{fig:trustedcapsulelayout}
 \begin{figure}
-  \centering
-  \includegraphics[width=\columnwidth]{fig/Fig2_Trusted_Capusle_Layout.pdf}
-  \caption{Trusted capsule layout.}
-  \label{fig:trustedcapsulelayout}
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Fig2_Trusted_Capusle_Layout.pdf}
+    \caption{Trusted capsule layout.}
+    \label{fig:trustedcapsulelayout}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%
 
@@ -37,68 +37,67 @@ securely loaded into a secure storage area accessible only by the TEE.
 \label{subsec:policy}
 
 \begin{table*}[t]
-\begin{center}
-\small{
-%\begin{tabular}{ |p{0.25\textwidth}|p{0.75\textwidth}| }
-\begin{tabular}{l|l}
- \hline
- & \textbf{Description} \\\hline\hline
- \textbf{Open-Only} & \\\hline\hline
+    \begin{center}
+        \small{
+            %\begin{tabular}{ |p{0.25\textwidth}|p{0.75\textwidth}| }
+            \begin{tabular}{l|l}
+                \hline
+                                    & \textbf{Description}                                                                               \\\hline\hline
+                \textbf{Open-Only}  &                                                                                                    \\\hline\hline
 
-  {\tt redact}({\em start}, {\em end}, {\em replaceBytes})
-  & Replace byte range [{\em start}, {\em end}] of trusted capsule data with bytes {\em replaceBytes}. \\\hline
+                {\tt redact}({\em start}, {\em end}, {\em replaceBytes})
+                                    & Replace byte range [{\em start}, {\em end}] of trusted capsule data with bytes {\em replaceBytes}. \\\hline
 
- \textbf{Close-Only} & \\\hline\hline
+                \textbf{Close-Only} &                                                                                                    \\\hline\hline
 
-  {\tt readNewCapsuleData}({\em offset}, {\em length})
-  & Return {\em length} bytes from {\em offset} of new trusted capsule data. \\\hline
+                {\tt readNewCapsuleData}({\em offset}, {\em length})
+                                    & Return {\em length} bytes from {\em offset} of new trusted capsule data.                           \\\hline
 
-  {\tt newCapsuleLength}()
-  & Return the length of new trusted capsule data. \\\hline
+                {\tt newCapsuleLength}()
+                                    & Return the length of new trusted capsule data.                                                     \\\hline
 
- \textbf{Shared} & \\\hline\hline
+                \textbf{Shared}     &                                                                                                    \\\hline\hline
 
-  {\tt getState}({\em key}, {\em where})
-  & Get state mapped to {\em key} from {\em where}. \\\hline
+                {\tt getState}({\em key}, {\em where})
+                                    & Get state mapped to {\em key} from {\em where}.                                                    \\\hline
 
-  {\tt setState}({\em key}, {\em val}, {\em where})
-  & Set state mapped to {\em key} to {\em val} in {\em where}. \\\hline
+                {\tt setState}({\em key}, {\em val}, {\em where})
+                                    & Set state mapped to {\em key} to {\em val} in {\em where}.                                         \\\hline
 
-  {\tt getLocation}({\em where})
-  & Get location of device from {\em where}. \\\hline
+                {\tt getLocation}({\em where})
+                                    & Get location of device from {\em where}.                                                           \\\hline
 
-  {\tt getTime}({\em where})
-  & Get current time from {\em where}. \\\hline
+                {\tt getTime}({\em where})
+                                    & Get current time from {\em where}.                                                                 \\\hline
 
-  {\tt readOriginalCapsuleData}({\em offset}, {\em length})
-  & Return {\em length} bytes from {\em offset} of original trusted capsule data. \\\hline
+                {\tt readOriginalCapsuleData}({\em offset}, {\em length})
+                                    & Return {\em length} bytes from {\em offset} of original trusted capsule data.                      \\\hline
 
-  {\tt originalCapsuleLength}()
-  & Return the length of original trusted capsule data. \\\hline
+                {\tt originalCapsuleLength}()
+                                    & Return the length of original trusted capsule data.                                                \\\hline
 
-  {\tt deleteCapsule}()
-  & Delete the trusted capsule.\\\hline
+                {\tt deleteCapsule}()
+                                    & Delete the trusted capsule.                                                                        \\\hline
 
-  {\tt updatePolicy}()
-  & Check for policy update with trusted capsule server. \\\hline
+                {\tt updatePolicy}()
+                                    & Check for policy update with trusted capsule server.                                               \\\hline
 
-  {\tt appendToBlacklist}({\em key}, {\em where})
-  & Append {\em key} to blacklist of {\em where} - used by log to prune states in {\em where}. \\\hline
+                {\tt appendToBlacklist}({\em key}, {\em where})
+                                    & Append {\em key} to blacklist of {\em where} - used by log to prune states in {\em where}.         \\\hline
 
-  {\tt removeFromBlacklist}({\em key}, {\em where})
-  & Remove {\em key} from blacklist of {\em where}. \\\hline
-
-\end{tabular}
-}
-\caption{The Lua-based API that policies in Trusted Capsules may use.}
-\label{Tbl:lua_ext}
-\end{center}
+                {\tt removeFromBlacklist}({\em key}, {\em where})
+                                    & Remove {\em key} from blacklist of {\em where}.                                                    \\\hline
+            \end{tabular}
+        }
+        \caption{The Lua-based API that policies in Trusted Capsules may use.}
+        \label{Tbl:lua_ext}
+    \end{center}
 \end{table*}
 
 In Trusted Capsules, policies are written in the Lua programming language and
 have one simple requirement: they must implement an {\tt evaluate\_policy}({\em
-  op}) function that is called when the capsule is being opened or closed; the
-{\em op} argument distinguishes between the two. In either case, the function
+        op}) function that is called when the capsule is being opened or closed; the
+    {\em op} argument distinguishes between the two. In either case, the function
 has to return a boolean value that is interpreted differently depending on the
 operation. If it returns {\tt true} on a capsule open, the data is decrypted and
 given to the normal world app. Otherwise, access is denied. On a capsule close,
@@ -122,7 +121,7 @@ original trusted capsule data at file open (read) and the new trusted capsule
 data at file close (write). Using these APIs, data owners can express
 policies that, for example, protect specific data regions from being
 overwritten. %%  \ar{This explanation is incomplete. How exactly does one prevent
-  %% specific regions from being overwritten?}
+%% specific regions from being overwritten?}
 
 \textbf{Redaction}: Selective policy-based disclosure of trusted capsule
 contents is a key feature of trusted capsules. Using our byte-oriented
@@ -132,11 +131,11 @@ the state of the device \emph{prior to} disclosing information to the normal wor
 of data transformations include removing sensitive texts or blurring
 images. %  \ar{Probably should merge this and data integrity section together.}
 
-\textbf{Revocation}: A policy can specify revocation in two 
+\textbf{Revocation}: A policy can specify revocation in two
 ways. First, we provide APIs to allow policies to self-delete a trusted
 capsule. When the \textit{deleteCapsule} API is called, we overwrite
 the trusted capsule file with zeros\footnote{This is because the Linux OS does not
-actually delete the file until the file's reference count becomes zero}. We then
+    actually delete the file until the file's reference count becomes zero}. We then
 make an RPC call into the normal world to delete the file and destroy the
 trusted capsule application session. Such a revocation is permanent.  Second, we
 allow retroactive policy changes via the remote capsule server. In this
@@ -160,43 +159,36 @@ also logged, unless otherwise specified by the APIs \textit{appendToBlacklist}
 and \textit{removeFromBlacklist}. The logs are written into the LOG section of
 the trusted capsule.  If the section runs out of space, the logs are flushed to
 the remote server and then overwritten. %% \ar{Is this really necessary as a
-  %% separate paragraph? The access log isn't used for anything special, so why not
-  %% have it part of the {\tt getState} and {\tt setState} API? Alternatively, add
-  %% the logging API methods to the table and just highlight the usefulness of that
-  %% here.}
+%% separate paragraph? The access log isn't used for anything special, so why not
+%% have it part of the {\tt getState} and {\tt setState} API? Alternatively, add
+%% the logging API methods to the table and just highlight the usefulness of that
+%% here.}
 
 
 \subsection{Data monitor}
 
 %%%%%%%%%%%%%%%%%%%%
 \begin{figure}
-  \centering
-  \includegraphics[width=\columnwidth]{fig/Fig3_TC_data_monitor_system_cache.pdf}
-  \caption{Trusted capsule data monitor design. Application system calls to the filesystem for accessing trusted capsules are intercepted and forwarded to the trusted capsule application through the FUSE filesystem and OP-TEE Linux Driver.
-	The secure world trusted capsule applications access peripheral I/O through RPC calls to the OP-TEE Supplicant via the OP-TEE Linux Driver.}
-  \label{fig:SystemModel}
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Fig3_TC_data_monitor_system_cache.pdf}
+    \caption{Trusted capsule data monitor design. Application system calls to the filesystem for accessing trusted capsules are intercepted and forwarded to the trusted capsule application through the FUSE filesystem and OP-TEE Linux Driver.
+        The secure world trusted capsule applications access peripheral I/O through RPC calls to the OP-TEE Supplicant via the OP-TEE Linux Driver.}
+    \label{fig:SystemModel}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%
 \begin{figure*}
- \centering
-  \includegraphics[width=\textwidth]{fig/TC_open_operation.pdf}
-  \caption{Trusted capsule monitor operation (shaded region operates in the secure world).
-  		   \textbf{A.} Application \textit{open} system call is intercepted.
-  		   \textbf{B, C.} FUSE identifies if a file is a capsule, and if so, invokes an RPC into the secure world to decrypt the capsule.
-           \textbf{D.} The trusted capsule application (TA) evaluates the \textit{open} policy. %This may involve
-                           %interactions with a trusted capsule server.
-                           It initializes RPC calls to fetch encrypted trusted capsule data.
-           \textbf{E.} FUSE writes the decrypted contents to a shadow file
-           % The RPC call is executed by OP-TEE Supplicant and the results are returned to
-           %                 the secure world. %through mmap and DMA transfers between the TrustZone kernel driver
-                           %and the OP-TEE Supplicant.
-           \textbf{F.} The application is returned a filehandle to the shadow file, and all subsequent I/O requests are directed to the shadow file.
-           % TA decrypts the encrypted data and applies any redactions. It then
-           %                 returns the decrypted data to the normal world application.
-           }
-  \label{fig:FlowChart}
+    \centering
+    \includegraphics[width=\textwidth]{fig/TC_open_operation.pdf}
+    \caption{Trusted capsule monitor operation (shaded region operates in the secure world).
+        \textbf{A.} Application \textit{open} system call is intercepted.
+        \textbf{B, C.} FUSE identifies if a file is a capsule, and if so, invokes an RPC into the secure world to decrypt the capsule.
+        \textbf{D.} The trusted capsule application (TA) evaluates the \textit{open} policy.
+        \textbf{E.} FUSE writes the decrypted contents to a shadow file
+        \textbf{F.} The application is returned a filehandle to the shadow file, and all subsequent I/O requests are directed to the shadow file.
+    }
+    \label{fig:FlowChart}
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%
 
@@ -235,7 +227,7 @@ capsule. This simplifies the design of our data monitor as we do not have to
 reason about multiple-reader/multiple-writer type problems when saving a
 capsule. An application may, however, have multiple capsules open.
 
-{\bf Policy execution engine}: We implemented a Trusted Application (TA) that
+    {\bf Policy execution engine}: We implemented a Trusted Application (TA) that
 runs within OP-TEE OS in secure world. It contains a Lua interpreter, to execute
 a capsule's policies, and it is responsible for maintaining the runtime session
 state associated with a capsule (e.g., cryptographic keys) and updating the
@@ -302,7 +294,7 @@ We consider two important security aspects of the Trusted Capsules data monitor.
 \textbf{Trusted Capsules}: Operations on the trusted capsule are performed by
 the trusted application in the secure world. We isolate each trusted capsule by
 having separate instances of the trusted application handle each capsule and
-by relying on OP-TEE OS to isolate each trusted application instance. 
+by relying on OP-TEE OS to isolate each trusted application instance.
 Our system stores persistent state associated with capsules (such as cryptographic keys)
 in secure storage using OP-TEE.
 
