@@ -418,6 +418,15 @@ based redact policy uses the \texttt{redact()} API as well as well as
 the \texttt{getTime()} API. This extra work to service an open request
 is evident from Figure~\ref{fig:policy_latency}.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=8cm,height=4cm]{fig/policy_latencies.pdf}
+    \caption{Normalized latency of servicing an \texttt{open} for different policies with respect to the latency to service a null-policy capsule open request. }
+    \label{fig:policy_latency}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %% \begin{table*}[t]
 %% \begin{center}

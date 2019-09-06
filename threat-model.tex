@@ -1,8 +1,8 @@
 \chapter{Threat Model}
 \label{ch:ThreatModel}
+
 \begin{figure}
   \centering
-%  \includegraphics[width=\columnwidth]{../Images/threat-model-state-diagram.pdf}
   \includegraphics[width=\columnwidth]{fig/state-machine.pdf}
   \caption{A finite-state machine view of Trusted Capsule's threat model. Each
     capsule on a device begins in the pessimistic state. A successful transition
@@ -68,9 +68,9 @@ We consider side-channel and analog attacks out-of-scope.
     \begin{tabular}{|l|l|l|} \hline
       \diagbox{{\bf Adversary}}{{\bf State}}& Pessimistic & Optimistic \\
       \hline
-      Weak & \Checkmark & \Checkmark \\
+      Weak& \Checkmark& \Checkmark \\
       \hline
-      Strong & \Checkmark & \XSolid \\
+      Strong& \Checkmark& \XSolid \\
       \hline
     \end{tabular}
   \end{center}

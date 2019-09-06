@@ -104,7 +104,25 @@
 %%
 \usepackage{checkend}	% better error messages on left-open environments
 \usepackage{graphicx}	% for incorporating external images
+\usepackage{tikz}
+\usepackage{amsmath}
 
+% inlined bib file
+\usepackage{filecontents}
+
+\usepackage[utf8]{inputenc}%(only for the pdftex engine)
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{indentfirst}
+\usepackage{listings}
+\usepackage{color, colortbl}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{url}%[hyphens]
+\usepackage{enumitem}
+\usepackage{bbding}
+\usepackage{diagbox}
 %% booktabs: provides some special commands for typesetting tables as used
 %% in excellent journals.  Ignore the examples in the Lamport book!
 \usepackage{booktabs}
@@ -416,7 +434,7 @@
 %    1. Introduction
 \include{intro}
 \include{background}
-\include{threat-model.tex}
+\include{threat-model}
 \include{tcs}
 \input{new-policies.tex} %--paper 
 \input{impl.tex} %-- paper (full)
