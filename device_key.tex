@@ -1,0 +1,191 @@
+\chapter{Device Registration and Key Distribution}
+\label{ch:device_key_reg}
+There is also a need to register the devices on which the capsule can be
+accessed and created and simultaneously make known the users who are using these
+devices. This $<$\texttt{user,device RSA pubkey, approved capsules} $>$ relationship is
+maintained on the remote server, and is queried when a user
+requests decryption for a capsule she does not have the decryption key for.
+
+This relationship is developed over two steps - a user needs to register
+his/her device and the capsule creator needs to create a list of users who are
+approved to receive the decryption keys. We take a look at both of these steps
+and then inspect the protocol followed to resolve a decryption request.  
+
+\section{Registring a Capsule Recipient}
+The process to register a user as a capsule recipient is outlined in figure
+\ref{fig:register1}. The user initiates a \texttt{register} call to the secure
+world with the email address they use to receive the capsule. The secure world
+at this point, looks up the secure storage to identify if it has a RSA
+public/private key pair saved. If it does not, the RSA key pair is generated.On
+receipt of the \texttt{register} request, the secure world handler initiates a
+TCP request to the remote server and passes the email address and the RSA public
+key it fetched (or generated). 
+
+On the receipt of this request, the remote server generates a nonce for this
+request and inserts the $<$\texttt{email, device RSA pubkey, nonce}$>$ tuple
+into it's database. Using the received RSA public key, the remote server encypts
+the generated nonce and sends an email to the users email address. This marks
+the first step of the registration process.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Registering as a capsule recipient.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+	\centering
+	\begin{sequencediagram}
+		\newthread[red]{NW}{Normal World}{}
+		\newthread[green]{SW}{Secure World}{}
+		\newthread[orange]{S}{Server}{}
+		\newthread[brown]{DB}{Database}{}
+		\newthread{G}{Gmail}{}
+		\begin{sdblock}{nw\_register\_device(email)}{ok}
+			\begin{call}{NW}{register(email)}{SW}{ok}
+			\begin{call}{SW}{register(email, pubkey)}{S}{ok}
+			\begin{call}{S}{insert(email, pubkey, nonce)}{DB}{ok}
+			\mess[0]{S}{{email(nonce')}}{G}
+			\end{call}
+			\end{call}		
+			\end{call}
+			\mess[0]{G}{{email(nonce')}}{NW}
+		\end{sdblock}
+	\end{sequencediagram}
+    \caption{Registration as Recipient - intiating the registration process}
+    \label{fig:register1}
+\end{figure}
+
+When the user receives the email with the encrypted nonce, the second part of
+the registration process can commence. This part of the process is used to
+validate that it was indeed the user who sent the registration request and
+establishes the $<$\texttt{email,device RSA pubkey}$>$ relationship. This
+process is detailed in figure \ref{fig:register2}. 
+
+To begin the validation request, the user passes the received encrypted nonce
+and the email address to the secure world using the \texttt{verify} request. The
+secure world decrypts the nonce using the private RSA key that is held in the
+secure storage. Once the nonce has been decrypted, the secure world initiates a
+TCP connection to the remote server and passes the nonce, email address, and the
+device RSA public key for verifcation. 
+
+The remote server verifies that the email id and the nonce it had saved in the
+database while creating the verification request. If the nonce, email, and the
+public key all match, the tuple is persisted and an OK status is returned to the
+user. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Validating the request to register as a 
+% capsule recipient.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+	\centering
+	\begin{sequencediagram}
+		\newthread[red]{NW}{Normal World}{}
+		\newthread[green]{SW}{Secure World}{}
+		\newthread[orange]{S}{Server}{}
+		\newthread[brown]{DB}{Database}{}
+		\begin{sdblock}{nw\_verify\_device(nonce', email)}{}
+			\begin{call}{NW}{verify(nonce', email)}{SW}{ok}
+			\begin{call}{SW}{decrypt(nonce', private\_key)}{SW}{nonce}\end{call}
+			\begin{call}{SW}{verify(nonce, email, pubkey)}{S}{ok}
+			\begin{call}{S}{verify(nonce, email, pubkey)}{DB}{ok}
+			\end{call}
+			\end{call}		
+			\end{call}
+		\end{sdblock}
+	\end{sequencediagram}
+    \caption{Registration as Recipient  - validation of the request}
+    \label{fig:register2}
+\end{figure}
+
+At the end of this process, the identity of the user is tied to the email
+address and the device pair. This process can be repeated on any other devices a
+user owns. The $<$\texttt{user,device RSA pubkey}$>$ relation is a unique key
+that is used to resolve all queries related to distributing a capsules keys.  
+
+\section{Capsule Generation and Key Distribution}
+The capsule generation process is outlined in figure \ref{fig:capgen}. To create
+the capsule, the data owner transmits to the remote trusted server the data
+file, the policy (written in the policy API), and a list containing email
+addresses of people approved to receive the decryption keys. On receiving the
+request, the remote server creates an 128 bit AES key and a randomly generated
+UUID. This UUID is added to the capsule header.The header, the data file and the
+policy are merged and encrypted using the AES key that was generated. 
+
+Once the encryption step is complete, the $<$\texttt{UUID, AES key, approved
+email list} $<$ tuple is persisted to the database. At the end of this process,
+the capsule thus created is returned to the user.  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Generating the capsule
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+	\centering
+	\begin{sequencediagram}
+		\newthread[red]{UA}{User A}{}
+		\newthread[green]{UB}{User B}{}
+		\newthread[orange]{S}{Server}{}
+		\newthread[brown]{DB}{Database}{}
+		\begin{sdblock}{gen\_cap(file, policy, emails)}{}
+			\begin{call}{UA}{gen\_cap(file, policy, emails)}{S}{(ok, capsule)}
+			\begin{call}{S}{gen\_aes()}{S}{aeskey}\end{call}
+			\begin{call}{S}{gen\_uuid()}{S}{uuid}\end{call}
+			\begin{call}{S}{cgen(aeskey, uuid, file, policy)}{S}{ok}\end{call}
+			\begin{call}{S}{insert(emails, aeskey, uuid)}{DB}{ok}
+			\end{call}
+			\end{call}
+		\end{sdblock}
+	\end{sequencediagram}
+    \caption{Capsule Generation and Key Registration}
+    \label{fig:capgen}
+\end{figure}
+
+Once the capsule creation step is complete, the data creator can send the
+capsule to the designated recipients. When a capsule recipient wishes to open
+the capsule, a decryption process is triggered as illustrated in figure
+\ref{fig:cap_decryption}. The open call to the capsule file is mediated through
+the FUSE filesystem, which initiates a \texttt{capsule\_open} call to the secure
+world. On receiving the  \texttt{capsule\_open} request, the Trusted Application
+searches secure storage for the AES key corresponding to the UUID found in the
+capsule header. 
+
+If no AES key is found, the secure world initiates a lookup request to the
+remote server by sending a \texttt{get\_key} request with the caspule's UUID and
+the secure worlds RSA public key. The remote server looks at the registered
+capsules and verifies that the RSA public key belongs to an approved user. If it
+does, it returns the AES key encrypted with the RSA public key received by the
+server  in the \texttt{get\_key} request. On receiving the encrypted AES key from
+the remote server, the secure world uses it's private RSA key to decrypt the
+capsules AES key. This AES key is used to decrypt the capsule and return the
+data to the normal world. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Decrypting the capsule. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+	\centering
+	\begin{sequencediagram}
+		\newthread[red]{UA}{User A NW}{}
+		\newthread[lime]{UBN}{User B NW}{}
+		\newthread[green]{UBS}{User B SW}{}
+		\newthread[orange]{S}{Server}{}
+		\newthread[brown]{DB}{Database}{}
+			\mess{UA}{capsule}{UBN}
+			\begin{sdblock}{open(capsule)}{}
+			\begin{call}{UBN}{open(capsule)}{UBN}{data}
+			\begin{call}{UBN}{capsule\_open(capsule)}{UBS}{}
+            \begin{call}{UBS}{get\_key(uuid, pubkey)}{S}{aeskey\_signed, ok}
+            \begin{call}{S}{verify\_uuid(uuid, pubkey)}{S}{uuid}\end{call}
+			\begin{call}{S}{is\_auth(uuid, pubkey)}{DB}{aeskey, ok}\end{call}
+            \end{call}
+            \begin{call}{UBS}{decrypt(aeskey\_signed, pvtkey)}{UBS}{aeskey}\end{call}
+            \begin{call}{UBS}{decrypt(aeskey, encrypted\_data)}{UBS}{data}\end{call}    
+            \end{call}
+			\end{call}
+		\end{sdblock}
+	\end{sequencediagram}
+    \caption{Capsule Decrypt as Recipient}
+    \label{fig:cap_decryption}
+\end{figure}
+
+% \section{Real Time Authentication}

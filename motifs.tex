@@ -1,0 +1,250 @@
+\chapter{section}{Motifs in TEE Research}
+\label{motifs}
+We now turn our attention to inspecting the usecases that TEE based
+applications have been designed for in prior work. Threat models are based
+on the underlying usecases, and we investigate each with the intention of
+assessing their applicability for unmodified applications. 
+    
+\begin{subsection}{Verifying User Actions}
+This is perhaps the most common usecase for trusted execution and is widely
+employed on modern mobile devices. The crux of the problem is this:
+\emph{How can an application verify if the user actually requested, and
+wishes to perform the requested action?} \\
+The application needs to be shielded from other - potentially malicious -
+applications, users, and the Operating System. In this multi-user,
+multi-process environment running on a potentially compromised operating
+system, the "good" application's memory and state can be arbitrarily
+manipulated, forcing it to perform actions unintended by the actual user. \\
+Verifying the user's identity can be addressed with two-factor
+authentication(TFA), but it is a one-time check after which there can be no
+guarantees  made about the applications state. A malicious application might
+attack after the two-factor authentication has been completed. Besides, TFA
+based schemes are notoriously hard to use\cite{herley2011research}. 
+
+If TEEs are employed, this becomes significantly easeir to solve. The
+identity of the user can be resolved using a trusted biometric scanner that
+operates from within the TEE. The users intention can be verified with the
+use of Trusted UI rendering that asks the user to verify that she did indeed
+initiate that action. This is now a standard feature on
+Android\cite{androiddevelopersblog_2018}, and is used by applications such
+as Duo Security, Nok Nok Labs, and ProxToMe for user authentication and
+Insulet Corporation and Bigfoot Biomedical for medical device
+control\cite{androiddevelopersblog_2018}. 
+
+This threat model requires an application to use the interface provided by
+the TEE sequestered authentication service and, depending on the level of
+support provided by the TEE and untrusted operating system, the application
+might have to implement it's own TEE-based authentication
+scheme\cite{liu2014veriui}. 
+
+\end{subsection}
+
+\begin{subsection}{Protecting Copyright Data from User}
+This is the classic Digital Rights Management(DRM) problem. An application
+must protect copyrighted information from the user that it is contractually
+obligated to service. DRM is used to prevent accidental leakage of
+copyrighted data to the user, and ensuring that the data is only used in
+ways that the data owner explicitly permits. Successfully achieving DRM on
+an untrusted Operating System is not possible, and the most common way to
+circumvent this limitation is through the use of TEEs to handle the media
+stream decryption and display.  This assumes that the TEE has a secure I/O
+mechanism  and has a mechanism to ensure exclusive access to the
+peripherals.There are a lot of DRM solutions being used in the industry such
+as Microsoft PlayReady\cite{microsoftplayready} and Widevine
+\cite{widevine}. 
+
+A more general formulation of the DRM problem is the scenario where an
+application wishes to hide some sensitive data from the user. One way to
+ensure safety of copyright information is to control the device peripherals
+to ensure that the user is not able to transmit any information. Some recent
+research \cite{restrictedspaces, SeCloak} in this space has focussed on the
+slightly orthogonal problem of ensuring that in copyright sensitive
+situations, an application or the user can leverage TEEs to control the
+peripherals. The Restricted Spaces\cite{restrictedspaces} work presents
+mechanism  where the host can analyse and regulate a guests TrustZone
+devices. This is done by reading and modifying the guest device's normal
+world state from TrustZone and nullifying the peripheral device drivers in
+accordance to the host's security policy. SeCloak\cite{SeCloak} achieves
+this same objective by labeling the memory regions that belong to peripheral
+devices as sensitive and trapping any normal world accesses to the secure
+world. %This requires the peripheral devices to
+%carry some notion of the security level at which they are being used. 
+
+Both these works assume that the device hardware is not malicious and that a
+secure boot mechanism exists to reliably set up the secure world. 
+%SeCloak further requires a signed device tree that enumerates all
+% information about the peripherals present on the board.
+Neither work places any trust in any software running in the normal world.
+This area of research requires much support from the TEE ecosystem to
+ensure that the proper secure IO channels and peripheral control mechanisms
+exist inside the TEE. \textbf{An unmodified application is unlikely to
+benefit from the TEE, unless there is a system call interception from the
+normal world that is able to discern copyright sensitive file accesses and
+route them to the TEE.}
+
+\end{subsection}
+    
+\begin{subsection}{Protecting Application Secrets}
+Applications have secrets - user data, encryption keys, proprietary
+algorithms - that must be kept safe from the untrusted operating system and
+the user. In the presence of an untrusted operating system that cannot
+protect the application from attack by a rogue user or process, these
+secrets can only be protected using a TEE or offloading that computation to
+another trusted device (ex: pushing the secure computation to the cloud). 
+
+In the presence of a TEE, this problem can be targeted by decomposing the
+application into trusted and untrusted parts~\cite{TLR,Proxos}. The trusted
+parts of the application - the secure classes and interfaces - are run
+inside the TEE. The untrusted  parts rely on the results of the secure
+computation done in the TEE, not the data being processed to get to those
+results. An attacker that has unfettered access to the untrusted OS can only
+access the normal world interfaces, but not the actual code and data that's
+held in the TEE. While TLR~\cite{TLR} uses TrustZone to host a small .NET
+managed runtime to execute the secure concrete classes, Proxos~\cite{Proxos}
+uses the notion of a secure VM that's hosted on the same hypervisor as the
+commodity untrusted OS. On the other hand, this is application partitioning
+scheme is central to the Intel SGX programming model. \emph{All}
+applications written using the Intel SGX Software Development Kit requires
+that the application be split into trusted and untrusted parts.
+
+The requirement to partition applications increases the burden on the
+developer to identify not only identify the secure parts of his applciation,
+but also learning to use the TEE vendor's API. To lessen the burden from app
+developers, Truz-Droid\cite{ying18truzdroid} integrates the TEE with the
+Android OS and provides ready to use elements that can be incorporated into
+the app directly. There has also been some work in the Software Engineering
+domain to automatically identify the secure parts of the application and
+split the application into the secure and unsecure parts. Glamdring
+\cite{lind2017glamdring} does this for SGX based applications and the work
+by Rubinov et. al.\cite{rubinov2016automated} does the same for Android
+applications and partitions them for Sierra TEE\cite{sierratee}. \textbf{The
+automated partitioning scheme is very promising for using with unmodified
+applications, assuming the TEE is structured in a way that allows for such
+decomposition to occur.}
+
+\subsection{Protecting User Secrets}
+While using an application, the user might wish to store some secrets like
+credit card information, passwords, etc. in their browsers. A web browser
+allows for arbitrary code execution in a sandboxed environment, and this
+makes these saved secrets particularly vulnerable to attacks. Running the
+entire unmodified browser in the TEE therefore, is a poor design choice.
+The Fidelius \cite{Fidelius_SP2018} project that aims to protect the user's
+interaction with the browser by sequestering the code that handles sensitive
+information in an SGX enclave and providing trusted IO path to the user to
+interact with the secure web enclave. The web enclave is used to render the
+Secure HTML forms found in the DOM tree and handle scripts that deal with
+the user's information. 
+
+This work assumes an interesting threat model: there is no trust placed in
+the normal world. More importantly, the unsafe parts of the application
+(extensions and scripts in the case of a browser) can compromise the other
+innocuous parts of the application. They assume that the peripheral devices
+are trusted, and there is a trusted IO path. They establish the trust
+between the peripheral device and the enclave using an attestation/key
+exchange protocol. This is similar to the split-interface design since it
+requires the secure functionality of the browser to be extracted into a
+secure enclave. Fidelius provides to the programmer an interface to protect
+security-critical components of his application. 
+    
+  
+\subsection{Complete Application Isolation}
+There has been a lot of reseach into protecting applications by completely
+isolating them from the untrusted Rich Operating System through the use of
+either trusted hypervisors \cite{hofmann2013inktag,SP3,chen2008overshadow},
+compiler instrumentation to isolate the applications
+\cite{criswell2014virtual} or the use of TEEs
+\cite{baumann2015shielding,guan17trustshadow}. Recent work
+\cite{TsaiGraphene2014, tsai2017graphene} has also investigated the use of
+TEE based library OS's to isolate the applications. 
+
+This research into protecting unmodified applications has gained traction
+because splitting interfaces of an application is usually a difficult task
+that is hard to get right. Instead, it might be easier to isolate complete
+applications using the TEE or the virtual machine monitor. The threat model
+here is that the attacker has compromised the operating system and can
+execute arbitrary code and can interfere with the memory and register state
+of any process. Any data that is needed by the application being sequestered
+is either made available at initialization, or it is assumed that the TEE
+has I/O capability. TrustZone does not impose any theoretical limitations on
+this, the actual filesystem support often relies on the REE OS
+\cite{optee_filesystem}. On the other hand, the I/O support in SGX is fairly
+limited. In the Graphene project\cite{TsaiGraphene2014, tsai2017graphene},
+the payload manifest contains a list of all the files which should be made
+available to the payload running within the SGX enclave. This includes the
+input and output files, which are automatically encrypted and
+integrity-protected by a corresponding user-side tool, in such a way that
+only the proper payload in a valid SGX enclave can read and write them.
+\textbf{This significantly limits the usability of such full-application
+isolation schemes, but overall, this isolation scheme is very promising for
+securing unmodified applications.}
+    
+   
+\end{subsection}
+
+\begin{subsection}{Machine Learning Asset Protection}
+With the advent of decentralized machine learning applications, there has
+been a renewed interest in the application of TEEs to protect the sensitive
+code and data that power these prediction systems. There are many targets
+that need protection in a Machine Learning environment, for example:
+\begin{itemize}
+    \item \textbf{Proprietary Models:} The contest organizer sends private
+    test data to your model and gets verifiable report of accuracy. Your
+    model stays safe until the organizer decides to purchase it. Other
+    participants can‘t cheat by training on test data.
+    \item \textbf{Federated Learning:} user's personal data remains
+    protected from other untrusted peers in multi-party computation. The
+    gradient updates also need protection to ensure a peer doesn't hamper
+    the training process.
+    \item \textbf{Private MLaaS}: The user data needs to be protected from
+    the untrusted ML-as-a-Service platform.
+\end{itemize}
+
+All ML related research in the TEE space assumes a similar threat model. The
+user data once acquired, is not usually considered a protected asset as long
+as it is used for training on the same device as the one on which it
+originated (An example would be SwiftKey\cite{swiftkey_support}). A
+malicious app or user might inject adversarial inputs or might tamper with
+the final gradients being emitted by a peer in a multiparty computation
+which leads to model poisoning. Since most ML training algoriths are
+resource heavy and trained on a cloud platform, most research in this space
+focusses on protections from the Cloud Platform
+\cite{ohrimenko2016oblivious,ryoan}. 
+
+In the work by Ohrimenko et.al\cite{ohrimenko2016oblivious}, a common
+computation is done on datasets sourced from multiple mutually distrusting
+parties. The neutral party in this work is the SGX enclave running in the
+cloud, and the adversary to any one peer is the cloud administrator and the
+other peers. Each peer provides the encrypted data and the associated keys
+to the cloud  provider, and this data is decrypted only in the SGX enclave
+that runs the agreed upon ML algorithm. The enclave processes teh aggregate
+datasets and emits an encrypted ML model. 
+
+Ryoan\cite{ryoan} goes a step further in its threat assumptions: multiple,
+mutually distrustful parties are involved in data-processing services, and
+neither are trusted by the data owner to keep the data secret. Neither the
+application nor the infrastructure is in the control of the user, and the
+malicious ML service provider may collude with the infrastructre provider to
+steal user's data through covert channels.
+
+
+\end{subsection}
+    
+    
+\subsection{What Applications Need}
+
+
+At the time of creating a secure application, the developer needs to make
+some assumptions about the threat models in will operate. Threat models need
+to be defined before the application is being developed in-order to make any
+reasonable guarantees about the state that remains protected in the course
+of normal operation. Seen another way, this means that for a given threat
+model, only a few applications are a reasonable fit. Retrofitting
+applications to a pre-existing threat model is hacky and difficult and does
+not lead to satisfactory outcomes.
+
+If we analyse the example applications presented in the body of research we
+have discussed in section \ref{motifs}, we can understand that there is a
+% very narrow class of applications that can benefit from TEEs. Table
+% \ref{fig:table} presents the example applications for each work we have
+% discussed so far. We also present the hardware requirements each of those
+% applications need to fully utilize TEEs.

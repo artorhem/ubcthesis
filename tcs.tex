@@ -9,13 +9,13 @@ the data monitor re-seals the capsule, evaluating another on-close policy
 to determine e.g., whether capsule content can be mutated. In the rest of this section,
 we describe the components of our system.
 
-\subsection{Capsules}
+\section{Capsules}
 
 %%%%%%%%%%%%%%%%%%%%
 %% \ref{fig:trustedcapsulelayout}
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{fig/Fig2_Trusted_Capusle_Layout.pdf}
+    \includegraphics[width=\columnwidth]{fig/Fig2_Trusted_Capusle_Layout_New.pdf}
     \caption{Trusted capsule layout.}
     \label{fig:trustedcapsulelayout}
 \end{figure}
@@ -33,67 +33,40 @@ securely loaded into a secure storage area accessible only by the TEE.
 %
 %\iv{Have to differentiate between on-open and on-close policies.}
 
-\subsection{Policy API}
+\section{Policy API}
 \label{subsec:policy}
 
-\begin{table*}[t]
-    \begin{center}
-        \small{
-            %\begin{tabular}{ |p{0.25\textwidth}|p{0.75\textwidth}| }
-            \begin{tabular}{l|l}
-                \hline
-                                    & \textbf{Description}                                                                               \\\hline\hline
-                \textbf{Open-Only}  &                                                                                                    \\\hline\hline
-
-                {\tt redact}({\em start}, {\em end}, {\em replaceBytes})
-                                    & Replace byte range [{\em start}, {\em end}] of trusted capsule data with bytes {\em replaceBytes}. \\\hline
-
-                \textbf{Close-Only} &                                                                                                    \\\hline\hline
-
-                {\tt readNewCapsuleData}({\em offset}, {\em length})
-                                    & Return {\em length} bytes from {\em offset} of new trusted capsule data.                           \\\hline
-
-                {\tt newCapsuleLength}()
-                                    & Return the length of new trusted capsule data.                                                     \\\hline
-
-                \textbf{Shared}     &                                                                                                    \\\hline\hline
-
-                {\tt getState}({\em key}, {\em where})
-                                    & Get state mapped to {\em key} from {\em where}.                                                    \\\hline
-
-                {\tt setState}({\em key}, {\em val}, {\em where})
-                                    & Set state mapped to {\em key} to {\em val} in {\em where}.                                         \\\hline
-
-                {\tt getLocation}({\em where})
-                                    & Get location of device from {\em where}.                                                           \\\hline
-
-                {\tt getTime}({\em where})
-                                    & Get current time from {\em where}.                                                                 \\\hline
-
-                {\tt readOriginalCapsuleData}({\em offset}, {\em length})
-                                    & Return {\em length} bytes from {\em offset} of original trusted capsule data.                      \\\hline
-
-                {\tt originalCapsuleLength}()
-                                    & Return the length of original trusted capsule data.                                                \\\hline
-
-                {\tt deleteCapsule}()
-                                    & Delete the trusted capsule.                                                                        \\\hline
-
-                {\tt updatePolicy}()
-                                    & Check for policy update with trusted capsule server.                                               \\\hline
-
-                {\tt appendToBlacklist}({\em key}, {\em where})
-                                    & Append {\em key} to blacklist of {\em where} - used by log to prune states in {\em where}.         \\\hline
-
-                {\tt removeFromBlacklist}({\em key}, {\em where})
-                                    & Remove {\em key} from blacklist of {\em where}.                                                    \\\hline
-            \end{tabular}
-        }
-        \caption{The Lua-based API that policies in Trusted Capsules may use.}
-        \label{Tbl:lua_ext}
-    \end{center}
-\end{table*}
-
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}|l|l|@{}}
+    \toprule
+     & \textbf{Description} \\ \midrule
+    \multicolumn{2}{|l|}{\textbf{Open-Only}} \\ \midrule
+    {\tt redact}({\em start}, {\em end}, {\em replaceBytes}) & Replace byte range [{\em start}, {\em end}] of trusted capsule data with bytes {\em replaceBytes}. \\ \midrule
+    \multicolumn{2}{|l|}{\textbf{Close-Only}} \\ \midrule
+    {\tt readNewCapsuleData}({\em offset}, {\em length}) & Return {\em length} bytes from {\em offset} of new trusted capsule data. \\ \midrule
+    {\tt newCapsuleLength}() & Return the length of new trusted capsule data. \\ \midrule
+    \multicolumn{2}{|l|}{\textbf{Shared}} \\ \midrule
+    {\tt getState}({\em key}, {\em where}) & Get state mapped to {\em key} from {\em where}. \\ \midrule
+    {\tt setState}({\em key}, {\em val}, {\em where}) & Set state mapped to {\em key} to {\em val} in {\em where}. \\ \midrule
+    {\tt getLocation}({\em where}) & Get location of device from {\em where}. \\ \midrule
+    {\tt getTime}({\em where}) & Get current time from {\em where}. \\ \midrule
+    {\tt readOriginalCapsuleData}({\em offset}, {\em length}) & Return {\em length} bytes from {\em offset} of original trusted capsule data. \\ \midrule
+    {\tt originalCapsuleLength}() & Return the length of original trusted capsule data. \\ \midrule
+    {\tt deleteCapsule}() & Delete the trusted capsule. \\ \midrule
+    {\tt updatePolicy}() & Check for policy update with trusted capsule server. \\ \midrule
+    {\tt appendToBlacklist}({\em key}, {\em where}) & Append {\em key} to blacklist of {\em where} - used by log to prune states in {\em where}. \\ \midrule
+    {\tt removeFromBlacklist}({\em key}, {\em where}) & Remove {\em key} from blacklist of {\em where}. \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{The Lua-based API that policies in Trusted Capsules may use}
+    \label{Tbl:lua_ext}
+    \end{table}
+    
 In Trusted Capsules, policies are written in the Lua programming language and
 have one simple requirement: they must implement an {\tt evaluate\_policy}({\em
         op}) function that is called when the capsule is being opened or closed; the
@@ -165,7 +138,7 @@ the remote server and then overwritten. %% \ar{Is this really necessary as a
 %% here.}
 
 
-\subsection{Data monitor}
+\section{Data monitor}
 
 %%%%%%%%%%%%%%%%%%%%
 \begin{figure}
@@ -270,24 +243,23 @@ storage and subsequent use.
 % against the untrusted normal world. Therefore we require this part of the
 % trusted data monitor to execute within TrustZone.
 
-% \pu{Write about capsule metadata and device state file. distinguish them.}  We
-% use OP-TEE OS native secure storage capability to store our cryptographic keys
-% and persistent trusted capsule states. Cryptographic information is stored in
-% serialized binary while trusted capsule states are stored in key-value
-% format. All trusted capsule encryption keys are stored in a single secure key
-% file. We allow the key file to be accessible by multiple trusted capsule
-% applications at a time so that multiple sessions can be instantiated
-% simultaneously to handle different capsules. In contrast, each capsule get its
-% own secure state file. State files can only be opened by a single trusted
-% capsule application at a time. This is enforced through the OP-TEE OS. In this
-% way, we enforce a single trusted capsule instance at a time per capsule.
+We use OP-TEE OS native secure storage capability to store our cryptographic
+keys and persistent trusted capsule states. Cryptographic information is stored
+in serialized binary while trusted capsule states are stored in key-value
+format. All trusted capsule encryption keys are stored in a single secure key
+file. We allow the key file to be accessible by multiple trusted capsule
+applications at a time so that multiple sessions can be instantiated
+simultaneously to handle different capsules. In contrast, each capsule get its
+own secure state file. State files can only be opened by a single trusted
+capsule application at a time. This is enforced through the OP-TEE OS. In this
+way, we enforce a single trusted capsule instance at a time per capsule.
 
 % Trusted application methods are invoked by FUSE based on specific system
 % calls. In this way, access control can be enforced dynamically based on the
 % local and remote state when such a system call is initiated. We describe several
 % of these methods below.
 
-\subsection{Security analysis}
+\section{Security analysis}
 
 We consider two important security aspects of the Trusted Capsules data monitor.
 

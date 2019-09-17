@@ -127,6 +127,10 @@
 %% in excellent journals.  Ignore the examples in the Lamport book!
 \usepackage{booktabs}
 
+%% For Latex based UML sequence diagrams
+\usepackage{tikz}
+\usepackage{pgf-umlsd}
+
 %% listings: useful support for including source code listings, with
 %% optional special keyword formatting.  The \lstset{} causes
 %% the text to be typeset in a smaller sans serif font, with
@@ -436,11 +440,13 @@
 \include{background}
 \include{threat-model}
 \include{tcs}
+\input{device_key.tex}
 \input{new-policies.tex} %--paper 
 \input{impl.tex} %-- paper (full)
 \input{eval.tex} %-- paper (abridged)
 \input{limitations.tex}
 \input{related.tex}
+\input{motifs.tex}
 \input{conclusion.tex} %-- full
 
 %    2. Main body
