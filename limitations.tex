@@ -8,34 +8,36 @@ we take a gander at why Trusted Capsules remains a rather naive attempt at
 solving the problem of retrofitting existing applications with security
 extensions.
 
-\section{Desgin Limitations}
+\section{Design Limitations}
 \begin{enumerate}
-    \item {\bf Inability to limit trust in optimistic state}: In the optimistic state, we
-trust the normal world kernel, the app, and the user, to not leak capsule data
-to unauthorized apps. Such trust may not be warranted even in a non-adversarial
-setting. For example, an app might create temporary copies of the files it has
-opened into a world-readable directory or the user might copy the data into the
-system clipboard. While we may use techniques such as information flow control
-to detect such data leaks, doing so would prohibitively impact performance.
+    \item {\bf Inability to limit trust in optimistic state}: In the optimistic
+state, we trust the normal world kernel, the app, and the user, to not leak
+capsule data to unauthorized apps. Such trust may not be warranted even in a
+non-adversarial setting. For example, an app might create temporary copies of
+the files it has opened into a world-readable directory or the user might copy
+the data into the system clipboard. While we may use techniques such as
+information flow control to detect such data leaks, doing so would prohibitively
+impact performance.
 
-    \item {\bf Lack of app semantics}: Since we interpose only on the {\tt open()} and
-    {\tt close()} syscalls to execute policies, a policy may not reason about {\em
-        why} an app is opening a file. For example, when a user opens a document in a
-text editor, it may open the file multiple times to seek through the file in
-parallel. Hence, while the capsule was opened just once from a user's
-perspective, the policy would observe multiple capsule access attempts. Policies
-that rely on access logs have to be aware of this disconnect.
+    \item {\bf Lack of app semantics}: Since we interpose only on the {\tt
+    open()} and {\tt close()} syscalls to execute policies, a policy may not
+    reason about {\em why} an app is opening a file. For example, when a user
+    opens a document in a text editor, it may open the file multiple times to
+    seek through the file in parallel. Hence, while the capsule was opened just
+    once from a user's perspective, the policy would observe multiple capsule
+    access attempts. Policies that rely on access logs have to be aware of this
+    disconnect.
 
-    \item {\bf Abusive policies}: Although we run capsule policies in a sandbox, we do not
-completely prevent all damages a malicious policy can inflict. It can, for
-example, access a user's GPS data and send them to a server for the purpose of
-tracking her whereabouts. To handle this limitation, we either need some
+    \item {\bf Abusive policies}: Although we run capsule policies in a sandbox,
+we do not completely prevent all damages a malicious policy can inflict. It can,
+for example, access a user's GPS data and send them to a server for the purpose
+of tracking her whereabouts. To handle this limitation, we either need some
 systematic way of vetting the data a policy sends to a remote server or prevent
 it from sending device data altogether.
 
-    \item{\bf Trusting actions from untrusted OS}: In our design, the signal (
-    {\tt open()} and {\tt close()} ) to the TEE to decrypt a capsule originates in
-    the untrusted part of the system. The TEE cannot differentiate between a
+    \item{\bf Trusting actions from untrusted OS}: In our design, the signal
+    ({\tt open()} and {\tt close()} ) to the TEE to decrypt a capsule originates
+    in the untrusted part of the system. The TEE cannot differentiate between a
     genuine access and a similar access requested by a malicious application.
     
     Trusting the actions originating in the normal world, dilutes the guarantees
@@ -46,8 +48,8 @@ it from sending device data altogether.
 
 \section{Prototype Limitations:}
 In this section we list the limitations that bound the current prototype from
-realizing the fulll vision of the Trusted Capsule model of data protection.
-Here we note some design and implementation limitations.
+realizing the fulll vision of the Trusted Capsule model of data protection. Here
+we note some design and implementation limitations.
 
 \begin{enumerate}
     \item FUSE can be used interpose on only the file I/O system calls that are
@@ -69,18 +71,13 @@ the stock Debian OS rootfs image. More recent Linux kernel versions have known
 problems with the HDMI drivers, which causes the Linux kernel to panic when a
 monitor is plugged in.
 
-This limitation hits our prototype particularly badly. In the
-current prototype, we send a copy of the entire file to TrustZone to decrypt.
-Since there are severe restrictions on the amount of memory available in
-TrustZone, we are unwittingly bounded on the maximum file size that can be
-processed as a capsule.
-    \item The implementation has a limitation that it
-needs to create copies of the data buffers to process each part of the capsule.
-This creates more memory pressure in an already resource constrained
-environment. 
+This limitation hits our prototype particularly badly. In the current prototype,
+we send a copy of the entire file to TrustZone to decrypt. Since there are
+severe restrictions on the amount of memory available in TrustZone, we are
+unwittingly bounded on the maximum file size that can be processed as a capsule.
+    \item The implementation has a limitation that it needs to create copies of
+the data buffers to process each part of the capsule. This creates more memory
+pressure in an already resource constrained environment. 
+
 \end{enumerate}
 
-\section{Securing Unmodified Applications}
-
-TEEs have been around for a long time now, and have been used for a diverse
-range of applications as can be seen in Appendix \ref{ch:appendix}. 

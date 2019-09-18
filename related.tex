@@ -14,7 +14,7 @@ the collected data. They are then enforced cooperatively within the enterprise
 as the data is used. Subsequent work strengthened this scheme by encrypting the
 data bundled with the policy using IBE (identifier-based encryption) and
 decrypting it only if its policies are satisfied~\cite{mont03stickypolicies,
-  pearson11stickypolicies}. Encrypting the data reduces the need for cooperation
+pearson11stickypolicies}. Encrypting the data reduces the need for cooperation
 and allows sharing data across enterprise boundaries
 
 Maniatis et al. outlined a vision that allows {\em all} users to protect their
@@ -61,63 +61,76 @@ state (unlike DroidVault and the work by Lazouski et al.). Our approach is
 motivated by usability concerns as we want authorized users to be able to use
 their desired third-party apps to process sensitive data.
 
-There are now startups that have emerged as players in the domain of providing data security systems. A startup called Sandstorm ~\cite{sandstorm} abstracts data 
-as a \textit{grain} -- a package of all 
-the apps, libraries, and configuration files needed to operate on a single 
-piece of data locally within a container. Sandstorm then creates an 
-enclosure around the container and interposes on all operations to enforce the \textit{grain}'s
-access policies.
-Unlike trusted capsules, which operates at the granularity of a
-piece of data, Sandstorm operate at the granularity of an entire
-software ecosystem for the data.
+There are now startups that have emerged as players in the domain of providing
+data security systems. A startup called Sandstorm ~\cite{sandstorm} abstracts
+data as a \textit{grain} -- a package of all the apps, libraries, and
+configuration files needed to operate on a single piece of data locally within a
+container. Sandstorm then creates an enclosure around the container and
+interposes on all operations to enforce the \textit{grain}'s access policies.
+Unlike trusted capsules, which operates at the granularity of a piece of data,
+Sandstorm operate at the granularity of an entire software ecosystem for the
+data.
 
-\textbf{Information Flow Control based mechanisms}: There has also been a vast body of research that studies providing data confidentiality through label-based solutions such as Distributed Information Flow Control ~\cite{jif, asbestos, histar, dstar, laminar, aeolus, flume}. They use labels to specify access control, 
-capabilities, and authority. These labels are used to track the flow of information at various levels of the software stack. 
+\textbf{Information Flow Control based mechanisms}: There has also been a vast
+body of research that studies providing data confidentiality through label-based
+solutions such as Distributed Information Flow Control ~\cite{jif, asbestos,
+histar, dstar, laminar, aeolus, flume}. They use labels to specify access
+control, capabilities, and authority. These labels are used to track the flow of
+information at various levels of the software stack. 
 
-By not allowing data to move to processes that 
-do not have the right labels, DIFC prevents sensitive data from being exfiltrated. 
+By not allowing data to move to processes that do not have the right labels,
+DIFC prevents sensitive data from being exfiltrated. 
  
-In DIFC, labels create a natural ecosystem for composition that allow a process to access multiple pieces of data. Trusted capsules are less composable. 
-If two trusted capsules have contradictory policies, they
-cannot be accessed by a process at the same time. On the other hand, trusted capsules are backward compatible 
-and do not require constructing a complex security lattice as in DIFC.
+In DIFC, labels create a natural ecosystem for composition that allow a process
+to access multiple pieces of data. Trusted capsules are less composable. If two
+trusted capsules have contradictory policies, they cannot be accessed by a
+process at the same time. On the other hand, trusted capsules are backward
+compatible and do not require constructing a complex security lattice as in
+DIFC.
 
-Another popular approach is tainting~\cite{demandemulation, neon,
-taintdroid, practicaltainting}. It tracks information flow by interposing
-on the system operations at the instruction-level. 
+Another popular approach is tainting~\cite{demandemulation, neon, taintdroid,
+practicaltainting}. It tracks information flow by interposing on the system
+operations at the instruction-level. 
 %In this way, such a
-These solution can track the flow of information at extremely fine
-granularity. %without changes to the application or operating system. 
-However they are resource intensive, both in memory
-and CPU. 
+These solution can track the flow of information at extremely fine granularity.
+%without changes to the application or operating system. However they are
+resource intensive, both in memory and CPU. 
 
-\textbf{Policy Based Isolation Mechanisms}: Traditional isolation-based solutions remain one of the most widely used practical solutions currently to provide data protection. These solutions, such as VPN, VMWare Ace~\cite{VMWareAce}, Secure Spaces~\cite{securespaces} and Hypori~\cite{hypori}, attempt to prevent
-sensitive data from leaving in the first place by enforcing policy at
-the network boundary between external and internal systems. 
-In these cases, policies that restrict movement of sensitive data can still be
-defeated by transformations, such as encryption and compression.
-In addition, some of these solutions incur substantial network cost as they do not support offline operations. 
+\textbf{Policy Based Isolation Mechanisms}: Traditional isolation-based
+solutions remain one of the most widely used practical solutions currently to
+provide data protection. These solutions, such as VPN, VMWare
+Ace~\cite{VMWareAce}, Secure Spaces~\cite{securespaces} and
+Hypori~\cite{hypori}, attempt to prevent sensitive data from leaving in the
+first place by enforcing policy at the network boundary between external and
+internal systems. In these cases, policies that restrict movement of sensitive
+data can still be defeated by transformations, such as encryption and
+compression. In addition, some of these solutions incur substantial network cost
+as they do not support offline operations. 
 
-Finally, other work has sought to ensure data confidentiality by
-enforcing application structures~\cite{Cleanroom, privacycapsules},
-limiting data lifetimes~\cite{enforcinglifetime, lacuna} and providing
-recourse actions such as backtracing intrusions~\cite{Backtracking, taser}.
+Finally, other work has sought to ensure data confidentiality by enforcing
+application structures~\cite{Cleanroom, privacycapsules}, limiting data
+lifetimes~\cite{enforcinglifetime, lacuna} and providing recourse actions such
+as backtracing intrusions~\cite{Backtracking, taser}.
 
 
 \textbf{Other TEE work}: The research community has used TEEs such as ARM
-TrustZone and Intel SGX for a variety of purposes - to provide a secure environment for running VMs, secure partitions or executing parts of third-party applications and to store their data   ~\cite{TLR, Nokia1, Nokia2}, to provide a root-of-trust for performing runtime measurements ~\cite{restrictedspaces, hypervision,SKEE,secvisor} and to secure peripherals ~\cite{TrustedSensors}. In general, these are
-orthogonal to Trusted Capsules. 
+TrustZone and Intel SGX for a variety of purposes - to provide a secure
+environment for running VMs, secure partitions or executing parts of third-party
+applications and to store their data   ~\cite{TLR, Nokia1, Nokia2}, to provide a
+root-of-trust for performing runtime measurements ~\cite{restrictedspaces,
+hypervision,SKEE,secvisor} and to secure peripherals ~\cite{TrustedSensors}. In
+general, these are orthogonal to Trusted Capsules. 
 
-VButton uses TrustZone to attest whether the UI
-inputs on the smartphone were initiated by the user~\cite{li18vbutton}; SeCloak
-provides direct control (on/off) over device peripherals even when the normal
-world OS is compromised~\cite{lentz18secloak}; Truz-Droid enables users to
-securely input and send secrets e.g., login credentials, to authorized servers
-without executing third-party code in TrustZone~\cite{ying18truzdroid};
-TrustShadow protects applications from untrusted OSes by executing them with a
-runtime in TrustZone~\cite{guan17trustshadow}; and SchrodinText allows the
-untrusted normal world OS to render sensitive text in the display received from
-an application backend server without revealing the contents of the
+VButton uses TrustZone to attest whether the UI inputs on the smartphone were
+initiated by the user~\cite{li18vbutton}; SeCloak provides direct control
+(on/off) over device peripherals even when the normal world OS is
+compromised~\cite{lentz18secloak}; Truz-Droid enables users to securely input
+and send secrets e.g., login credentials, to authorized servers without
+executing third-party code in TrustZone~\cite{ying18truzdroid}; TrustShadow
+protects applications from untrusted OSes by executing them with a runtime in
+TrustZone~\cite{guan17trustshadow}; and SchrodinText allows the untrusted normal
+world OS to render sensitive text in the display received from an application
+backend server without revealing the contents of the
 text~\cite{sani17schrodintext}; DelegaTEE, which uses Intel SGX to enable users
 to share their access to online service providers without revealing their
 credentials~\cite{matetic18delegatee}.
